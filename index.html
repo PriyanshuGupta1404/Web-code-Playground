@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebPlayground Pro | Midnight Edition</title>
+
+    <!-- External Resources -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* Core Palette */
+        --bg-app: #05070a;
+        --bg-side: #0a0c12;
+        --bg-surface: #11141d;
+        --bg-header: rgba(10, 12, 18, 0.85);
+
+        /* Accents */
+        --primary: #38bdf8;
+        --primary-glow: rgba(56, 189, 248, 0.35);
+        --secondary: #818cf8;
+        --emerald: #10b981;
+        --rose: #f43f5e;
+        --amber: #fbbf24;
+
+        /* Borders & Text */
+        --border: rgba(255, 255, 255, 0.06);
+        --border-hover: rgba(255, 255, 255, 0.12);
+        --text-main: #e2e8f0;
+        --text-muted: #94a3b8;
+        --text-dim: #475569;
+
+        /* Sizing */
+        --editor-fs: 14px;
+        --header-h: 60px;
+        --tab-h: 42px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        background-color: var(--bg-app);
+        color: var(--text-main);
+        font-family: "Inter", sans-serif;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- Header --- */
+      .app-header {
+        height: var(--header-h);
+        background: var(--bg-header);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .logo-box {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 16px -4px var(--primary-glow);
+      }
+      .logo-box i {
+        color: white;
+        font-size: 16px;
+      }
+
+      .project-meta {
+        display: flex;
+        flex-direction: column;
+      }
+      .project-title {
+        background: transparent;
+        border: 1px solid transparent;
+        color: white;
+        font-weight: 700;
+        font-size: 15px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        outline: none;
+        width: 180px;
+      }
+      .project-title:hover,
+      .project-title:focus {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--border);
+      }
+      .save-indicator {
+        font-size: 10px;
+        color: var(--emerald);
+        font-weight: 600;
+        padding-left: 6px;
+        opacity: 0.8;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .btn-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-circle:hover {
+        background: var(--border);
+        color: white;
+        border-color: var(--border-hover);
+        transform: translateY(-1px);
+      }
+
+      .run-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 10px 20px -5px var(--primary-glow);
+        transition: all 0.2s;
+      }
+      .run-btn:hover {
+        background: #7dd3fc;
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -4px var(--primary-glow);
+      }
+      .run-btn:active {
+        transform: translateY(0);
+      }
+
+      /* --- Workspace --- */
+      .main-stage {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        background: var(--bg-app);
+      }
+
+      .editor-pane {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border);
+      }
+
+      .tab-strip {
+        height: var(--tab-h);
+        background: var(--bg-side);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        height: 100%;
+        align-items: flex-end;
+      }
+      .tab {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0 16px;
+        height: 34px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+      .tab.active {
+        background: var(--bg-surface);
+        color: var(--primary);
+        border: 1px solid var(--border);
+        border-bottom-color: var(--bg-surface);
+      }
+      .tab:not(.active):hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .utility-links {
+        display: flex;
+        gap: 14px;
+      }
+      .util-btn {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .util-btn:hover {
+        color: var(--rose);
+      }
+
+      .code-area {
+        flex: 1;
+        position: relative;
+        background: var(--bg-surface);
+      }
+      textarea {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        color: #cbd5e1;
+        font-family: "Fira Code", monospace;
+        font-size: var(--editor-fs);
+        padding: 24px;
+        border: none;
+        outline: none;
+        resize: none;
+        line-height: 1.7;
+      }
+
+      /* --- Preview --- */
+      .preview-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+      }
+      .preview-bar {
+        height: var(--tab-h);
+        background: var(--bg-side);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+      }
+      .preview-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--emerald);
+        letter-spacing: 0.5px;
+      }
+      .indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--emerald);
+        box-shadow: 0 0 8px var(--emerald);
+      }
+
+      iframe {
+        flex: 1;
+        width: 100%;
+        border: none;
+        background: white;
+      }
+
+      /* --- Console --- */
+      #console-panel {
+        background: #080a0f;
+        border-top: 2px solid var(--border);
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+      }
+      .console-header {
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.02);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .console-title {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .console-logs {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 0;
+      }
+      .log {
+        padding: 6px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        display: flex;
+        gap: 14px;
+      }
+      .log-t {
+        color: var(--text-dim);
+        font-size: 10px;
+        min-width: 65px;
+      }
+      .log-v {
+        color: #94a3b8;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .log-warn {
+        background: rgba(251, 191, 36, 0.05);
+        border-left: 3px solid var(--amber);
+      }
+      .log-error {
+        background: rgba(244, 63, 94, 0.05);
+        border-left: 3px solid var(--rose);
+      }
+
+      /* --- Settings --- */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal {
+        background: var(--bg-surface);
+        width: 400px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+      }
+      .modal-h {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-b {
+        padding: 24px;
+      }
+      .s-row {
+        margin-bottom: 24px;
+      }
+      .s-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 12px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--primary);
+        height: 4px;
+        background: #334155;
+        border-radius: 2px;
+      }
+
+      .resizer {
+        width: 4px;
+        background: var(--bg-app);
+        cursor: col-resize;
+        transition: background 0.3s;
+        z-index: 10;
+      }
+      .resizer:hover {
+        background: var(--primary);
+        box-shadow: 0 0 15px var(--primary);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .main-stage {
+          flex-direction: column;
+        }
+        .editor-pane {
+          width: 100% !important;
+          height: 50%;
+          border-right: none;
+        }
+        .resizer {
+          width: 100%;
+          height: 4px;
+          cursor: row-resize;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-box"><i class="fas fa-terminal"></i></div>
+        <div class="project-meta">
+          <input
+            type="text"
+            id="project-name"
+            class="project-title"
+            value="New Project"
+          />
+          <span class="save-indicator"
+            ><i class="fas fa-cloud-check"></i> Live Sync Active</span
+          >
+        </div>
+      </div>
+      <div class="actions">
+        <button
+          class="btn-circle"
+          onclick="copyCode()"
+          title="Copy active code"
+        >
+          <i class="fas fa-copy"></i>
+        </button>
+        <button
+          class="btn-circle"
+          onclick="exportHTML()"
+          title="Export .html file"
+        >
+          <i class="fas fa-download"></i>
+        </button>
+        <button class="btn-circle" onclick="toggleModal()" title="Preferences">
+          <i class="fas fa-sliders"></i>
+        </button>
+        <div
+          style="
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            margin: 0 8px;
+          "
+        ></div>
+        <button class="run-btn" onclick="execute()">
+          <i class="fas fa-play"></i> RUN CODE
+        </button>
+      </div>
+    </header>
+
+    <main class="main-stage">
+      <section id="editor-side" class="editor-pane">
+        <div class="tab-strip">
+          <div class="tabs">
+            <button id="t-html" class="tab active" onclick="setTab('html')">
+              <i class="fab fa-html5" style="color: #ef4444"></i> HTML
+            </button>
+            <button id="t-css" class="tab" onclick="setTab('css')">
+              <i class="fab fa-css3-alt" style="color: #3b82f6"></i> CSS
+            </button>
+            <button id="t-js" class="tab" onclick="setTab('js')">
+              <i class="fab fa-js" style="color: #eab308"></i> JS
+            </button>
+          </div>
+          <div class="utility-links">
+            <button class="util-btn" onclick="resetAll()">
+              <i class="fas fa-rotate-left"></i> Reset
+            </button>
+            <button class="util-btn" onclick="clearAll()">
+              <i class="fas fa-trash-can"></i> Clear
+            </button>
+          </div>
+        </div>
+        <div class="code-area">
+          <textarea
+            id="i-html"
+            placeholder="<!-- Structure -->"
+            spellcheck="false"
+          ></textarea>
+          <textarea
+            id="i-css"
+            class="hidden"
+            placeholder="/* Styles */"
+            spellcheck="false"
+          ></textarea>
+          <textarea
+            id="i-js"
+            class="hidden"
+            placeholder="// Logic"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </section>
+
+      <div class="resizer" id="draghandle"></div>
+
+      <section id="preview-side" class="preview-pane">
+        <div class="preview-bar">
+          <div class="preview-status">
+            <div class="indicator-dot"></div>
+            LIVE PREVIEW
+          </div>
+          <div class="actions" style="gap: 20px">
+            <button
+              class="util-btn"
+              style="color: var(--text-muted)"
+              onclick="toggleConsole()"
+            >
+              TERMINAL
+              <span
+                id="l-count"
+                style="
+                  background: #1e293b;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  margin-left: 6px;
+                "
+                >0</span
+              >
+            </button>
+            <button
+              class="btn-circle"
+              style="border: none; width: auto; height: auto"
+              onclick="goFullscreen()"
+            >
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+        </div>
+        <iframe id="output"></iframe>
+        <div id="console-panel" class="hidden">
+          <div class="console-header">
+            <div class="console-title">
+              <i class="fas fa-microchip"></i> SYSTEM OUTPUT
+            </div>
+            <button class="util-btn" onclick="clearConsole()">
+              <i class="fas fa-ban"></i> Clear
+            </button>
+          </div>
+          <div id="c-logs" class="console-logs"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="settings-modal" class="overlay">
+      <div class="modal">
+        <div class="modal-h">
+          <h3 style="font-size: 14px; letter-spacing: 1px">PREFERENCES</h3>
+          <button
+            class="btn-circle"
+            style="border: none"
+            onclick="toggleModal()"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-b">
+          <div class="s-row">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+              "
+            >
+              <span class="s-label">Editor Font Size</span>
+              <span style="color: var(--primary); font-weight: 700" id="fs-val"
+                >14px</span
+              >
+            </div>
+            <input
+              type="range"
+              id="fs-slider"
+              min="12"
+              max="24"
+              value="14"
+              oninput="updateFS(this.value)"
+            />
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <span class="s-label">Auto-Run Engine</span>
+            <label style="position: relative; width: 40px; height: 20px">
+              <input
+                type="checkbox"
+                id="auto-run"
+                checked
+                style="opacity: 0; width: 0; height: 0"
+              />
+              <span
+                style="
+                  position: absolute;
+                  inset: 0;
+                  background: #334155;
+                  border-radius: 20px;
+                  cursor: pointer;
+                "
+                onclick="this.previousElementSibling.click()"
+              ></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const el = {
+        html: document.getElementById("i-html"),
+        css: document.getElementById("i-css"),
+        js: document.getElementById("i-js"),
+        output: document.getElementById("output"),
+        logs: document.getElementById("c-logs"),
+        logCount: document.getElementById("l-count"),
+        console: document.getElementById("console-panel"),
+      };
+
+      let logs = 0;
+      const DEFAULT = {
+        html: `<div class="hero">\n  <h1>Studio Playground</h1>\n  <p>Your creative ideas start here.</p>\n  <button id="btn" onclick="trigger()">Launch Action</button>\n</div>`,
+        css: `body {\n  margin: 0; padding: 0; height: 100vh;\n  display: grid; place-items: center;\n  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);\n  color: white; font-family: 'Inter', sans-serif;\n}\n.hero {\n  text-align: center; background: rgba(255,255,255,0.03);\n  padding: 4rem; border-radius: 2rem; border: 1px solid rgba(255,255,255,0.05);\n}\nh1 { font-size: 3rem; margin-bottom: 0.5rem; letter-spacing: -1px; }\np { opacity: 0.6; margin-bottom: 2rem; }\nbutton {\n  background: #38bdf8; color: #0f172a; border: none;\n  padding: 12px 32px; border-radius: 12px; font-weight: 800;\n  cursor: pointer; transition: 0.2s;\n}\nbutton:hover { transform: scale(1.05); background: white; }`,
+        js: `function trigger() {\n  console.log("Action launched at " + new Date().toLocaleTimeString());\n  console.warn("System check: All parameters nominal.");\n}\n\nconsole.log("Welcome to Studio Playground.");`,
+      };
+
+      function setTab(type) {
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        document.getElementById("t-" + type).classList.add("active");
+        [el.html, el.css, el.js].forEach((t) => t.classList.add("hidden"));
+        el[type].classList.remove("hidden");
+        el[type].focus();
+      }
+
+      function execute() {
+        const html = el.html.value;
+        const css = `<style>${el.css.value}</style>`;
+        const js = `<script>${el.js.value}<\/script>`.replace(
+          /<\/script>/g,
+          "</" + "script>"
+        );
+
+        const bridge = `
+                <script>
+                    (function() {
+                        const orig = { log: console.log, warn: console.warn, error: console.error };
+                        function post(type, args) {
+                            window.parent.postMessage({
+                                type: 'console',
+                                level: type,
+                                msg: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+                            }, '*');
+                        }
+                        console.log = (...a) => { orig.log(...a); post('log', a); };
+                        console.warn = (...a) => { orig.warn(...a); post('warn', a); };
+                        console.error = (...a) => { orig.error(...a); post('error', a); };
+                        window.onerror = (m, s, l) => post('error', ['[Line ' + l + '] ' + m]);
+                    })();
+                <\/script>
+            `.replace(/<\/script>/g, "</" + "script>");
+
+        const content = `<!DOCTYPE html><html><head><meta charset="UTF-8">${css}${bridge}</head><body>${html}${js}</body></html>`;
+        const doc =
+          el.output.contentDocument || el.output.contentWindow.document;
+        doc.open();
+        doc.write(content);
+        doc.close();
+      }
+
+      window.addEventListener("message", (e) => {
+        if (e.data.type === "console") {
+          logs++;
+          el.logCount.innerText = logs;
+          const div = document.createElement("div");
+          div.className = "log log-" + e.data.level;
+          div.innerHTML = `<span class="log-t">${new Date().toLocaleTimeString(
+            [],
+            { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+          )}</span><div class="log-v">${e.data.msg}</div>`;
+          el.logs.appendChild(div);
+          el.logs.scrollTop = el.logs.scrollHeight;
+        }
+      });
+
+      function clearConsole() {
+        el.logs.innerHTML = "";
+        logs = 0;
+        el.logCount.innerText = "0";
+      }
+      function toggleConsole() {
+        el.console.classList.toggle("hidden");
+      }
+      function toggleModal() {
+        document.getElementById("settings-modal").style.display =
+          document.getElementById("settings-modal").style.display === "flex"
+            ? "none"
+            : "flex";
+      }
+      function updateFS(v) {
+        document.getElementById("fs-val").innerText = v + "px";
+        document.documentElement.style.setProperty("--editor-fs", v + "px");
+      }
+      function resetAll() {
+        if (confirm("Reset to boilerplate?")) {
+          el.html.value = DEFAULT.html;
+          el.css.value = DEFAULT.css;
+          el.js.value = DEFAULT.js;
+          execute();
+        }
+      }
+      function clearAll() {
+        if (confirm("Clear everything?")) {
+          el.html.value = el.css.value = el.js.value = "";
+          execute();
+        }
+      }
+
+      function copyCode() {
+        const active = document.querySelector("textarea:not(.hidden)");
+        active.select();
+        document.execCommand("copy");
+        const icon = document.querySelector('button[onclick="copyCode()"] i');
+        icon.className = "fas fa-check";
+        setTimeout(() => (icon.className = "fas fa-copy"), 1000);
+      }
+
+      function exportHTML() {
+        const name = document.getElementById("project-name").value || "project";
+        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${name}</title><style>${el.css.value}</style></head><body>${el.html.value}<script>${el.js.value}<\/script></body></html>`;
+        const blob = new Blob([full], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name.toLowerCase().replace(/\s+/g, "-") + ".html";
+        a.click();
+      }
+
+      function goFullscreen() {
+        if (!document.fullscreenElement)
+          document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+
+      // Resizing
+      const resizer = document.getElementById("draghandle");
+      const left = document.getElementById("editor-side");
+      let drag = false;
+      resizer.addEventListener("mousedown", () => (drag = true));
+      document.addEventListener("mousemove", (e) => {
+        if (!drag) return;
+        let p = (e.clientX / window.innerWidth) * 100;
+        if (p > 20 && p < 80) left.style.width = p + "%";
+      });
+      document.addEventListener("mouseup", () => (drag = false));
+
+      // Auto-run & Tabs
+      let debounce;
+      [el.html, el.css, el.js].forEach((i) => {
+        i.addEventListener("input", () => {
+          if (document.getElementById("auto-run").checked) {
+            clearTimeout(debounce);
+            debounce = setTimeout(execute, 1000);
+          }
+        });
+        i.addEventListener("keydown", function (e) {
+          if (e.key === "Tab") {
+            e.preventDefault();
+            let s = this.selectionStart;
+            this.value =
+              this.value.substring(0, s) +
+              "  " +
+              this.value.substring(this.selectionEnd);
+            this.selectionStart = this.selectionEnd = s + 2;
+          }
+        });
+      });
+
+      window.onload = () => {
+        el.html.value = DEFAULT.html;
+        el.css.value = DEFAULT.css;
+        el.js.value = DEFAULT.js;
+        execute();
+      };
+    </script>
+  </body>
+</html>
