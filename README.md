@@ -1,46 +1,40 @@
-## WebPlayground Pro 
+## WebPlayground Pro
 
-A professional, browser-based code playground designed for rapid prototyping of HTML, CSS, and JavaScript. The Midnight Edition features a high-performance "Midnight Studio" aesthetic with glassmorphism effects, a virtual terminal, and live execution engines.
+A simplified yet powerful browser-based IDE built with vanilla JavaScript. This project is designed to demonstrate core web development fundamentals including DOM manipulation, cross-window communication, and the Blob API.
 
 ## 🚀 Key Features
 
-- Midnight Studio UI: A premium dark-themed interface built with pure CSS, featuring refined typography and visual depth.
+- Real-time Editor: Multi-tabbed interface for HTML, CSS, and JavaScript.
 
-- Tri-Pane Editor: Dedicated workspaces for HTML5, CSS3, and ES6+ JavaScript.
+- Sandboxed Preview: Uses an <iframe> to isolated code execution for security and stability.
 
-- Live Preview Engine: Real-time rendering of your code in a sandboxed environment.
+- Virtual Terminal: Captures console.log and console.warn outputs using a custom postMessage bridge.
 
-- Integrated Terminal: A virtual console that captures console.log, console.warn, and console.error outputs directly from your script.
+- Resizable Workspace: Interactive draggable divider to customize the layout ratio.
 
-- Export to Standalone: Download your entire project as a single, production-ready .html file.
+- Project Export: Instantly download your project as a standalone .html file.
 
-- Customizable Preferences:
+- Clean UI: Professional dark-themed interface built without external CSS frameworks.
 
-  - Adjustable editor font size (12px to 24px).
+## 🛠️ Technical Implementation
 
-  - Toggleable Auto-Run engine.
+1. The Terminal Bridge
 
-- Developer Utilities:
+To communicate between the preview window and the main UI, I implemented a messaging system:
 
-  - Resizable Layout: Drag the divider to balance your workspace and preview.
+- Injection: A script is injected into the preview that overrides the global console object.
 
-  - One-Click Copy: Quickly copy code from the active tab.
+- PostMessage: Logs are stringified and sent to the parent window.
 
-  - Reset/Clear: Instantly restore boilerplates or wipe the canvas.
+- Receiver: The main window listens for these events and renders them in the custom console UI.
 
-  - Fullscreen Mode: Expand the preview to fill the entire screen.
+2. Live Execution
 
-## 🛠️ Tech Stack
+Instead of simple source updates, the app uses document.write() logic. This ensures that the iframe's global state (variables, listeners) is completely cleared and re-initialized every time the "Run" button is clicked.
 
-- HTML5
+3. Layout Management
 
-- CSS3 (Custom properties, Flexbox, Backdrop filters)
-
-- JavaScript (ES6+)
-
-- Font Awesome 6.4.0 (Icons)
-
-- Google Fonts (Inter & Fira Code)
+The resizable sidebar is built using absolute mouse coordinate tracking. By calculating the ratio of the mouse position to the window width, the app dynamically updates Flexbox basis values for a smooth user experience.
 
 ## 📦 Getting Started
 
@@ -53,18 +47,6 @@ Since the project is built as a portable tool, you only need the single index.ht
 Open the file in any modern web browser (Chrome, Firefox, or Edge recommended).
 
 3. Start coding!
-
-## Project Structure
-
-If you wish to modify the source, the project follows this internal architecture:
-
-- Header: Logic for project naming, global actions, and the run engine.
-
-- Main Stage: Flex container holding the editor-pane and preview-pane.
-
-- Editor: Tabbed logic using textarea elements and hidden visibility states.
-
-- Bridge Script: An injected IIFE (Immediately Invoked Function Expression) that bridges the iframe console to the parent application terminal.
 
 ## ⌨️ Usage
 
